@@ -1,0 +1,58 @@
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.9.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9.7
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -Iv poetry==1.1.11 pyparsing==2.4.7
+          poetry config virtualenvs.create false
+          poetry config experimental.new-installer false
+
+          poetry install
+
+      - name: Mypy
+        run: |
+          set -e
+          set -x
+          mypy app
+
+      - name: Flake8
+        run: |
+          set -e
+          set -x
+          flake8 app
+
+      - name: Black
+        run: |
+          set -e
+          set -x
+          black app --check
+
+      - name: Isort
+        run: |
+          set -e
+          set -x
+          isort app --check-only
+
+      - name: Vulture
+        run: |
+          set -e
+          set -x
+          vulture
